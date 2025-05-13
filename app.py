@@ -1,6 +1,20 @@
 from flask import Flask, render_template, request
+from flask_sqlalchemy import SQLAlchemy # rhis library allow us to ineteract with database more efficiently.
 
 app = Flask(__name__)
+
+app.config["SECRET_KEY"] = "myapplication123" # security for application for not hacking
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db" # uri specifies we are using sqlite , data.db is database file name
+
+db = SQLAlchemy(app) # this will sql alchemy database instance.
+
+class Form(db.Model):# this is a database model
+    id = db.Column(db.Integer, primary_key= True)
+    first_name = db.Column(db.String(80))
+    last_name = db.Column(db.String(80))
+    email = db.Column(db.String(80))
+    date = db.Column(db.Date)
+    occupation = db.Column(db.String(80))
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -29,4 +43,6 @@ def index():
     return render_template("index.html")
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all() # this will create a database, it alos check with the URI , if it is created it is not created twice.
     app.run(debug=True, port=5001)
