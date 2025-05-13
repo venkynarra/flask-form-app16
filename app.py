@@ -1,13 +1,23 @@
 from flask import Flask, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy  # rhis library allow us to ineteract with database more efficiently.
 from datetime import datetime
+from flask_mail import Mail, Message
 
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "myapplication123"  # security for application for not hacking
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db?check_same_thread=False&timeout=10"  # uri specifies we are using sqlite , data.db is database file name
 
+
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USERNAME"] = "venkateshnarra368@gmail.com"
+app.config["MAIL_PASSWORD"] = "ispujplhuvhwkuyp"
+
 db = SQLAlchemy(app)  # this will sql alchemy database instance.
+
+mail = Mail(app)
 
 # this is a database model
 class Form(db.Model):
@@ -38,6 +48,17 @@ def index():
 
             db.session.add(form)
             db.session.commit()  # kind of insert sql query
+
+            message_body = f"Thanks for your submission, {first_name}."\
+                        f"Here are your data:\n{first_name}\n{last_name}\n{date}\n" \
+                         f"Thank You!"
+
+            message = Message(subject="New form submission",
+                              sender = app.config["MAIL_USERNAME"],
+                              recipients=[email],
+                              body= message_body)
+            mail.send(message)
+
             flash("Your form was submitted successfully!", "success")  # flash message
 
             # Print values to terminal
